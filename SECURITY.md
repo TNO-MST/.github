@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-None. See [SUPPORT.md].
+None. See [SUPPORT.md](SUPPORT.md).
 
 ## Reporting a Vulnerability
 
