@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-No official support or guarantees are provided for any software or material in the TNO-MST GitHub organization.
+None. See [SUPPORT.md].
 
 ## Reporting a Vulnerability
 
