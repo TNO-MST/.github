@@ -2,9 +2,9 @@
 
 ## Definitions
 
-**TNO**: The _Nederlandse Organisatie voor toegepast-natuurwetenschappelijk Onderzoek TNO_.
+**TNO**: _Nederlandse Organisatie voor toegepast-natuurwetenschappelijk Onderzoek TNO_.
 
-**The Software**: Any material, which includes computer software and may include associated media, materials and documentation in the TNO-MST GitHub organization.
+**The Software**: Any material, which includes computer software and may include associated media, materials and documentation, in the TNO-MST GitHub organization.
 
 ## No Warranty
 
