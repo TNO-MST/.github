@@ -14,4 +14,7 @@ Thanks for your understanding and for being part of the community!
 
 ## Contributor License Agreement
 
-By contributing to TNO-MST, you agree that your contributions are licensed under the Apache License 2.0 and that you grant the necessary patent rights as described in Section 3 of the license.
+By contributing to TNO-MST, you agree:
+
+- That your contributions are licensed under the Apache License 2.0;
+- To the [Contributor License Agreement](CONTRIBUTOR_LICENSE_AGREEMENT.md).
