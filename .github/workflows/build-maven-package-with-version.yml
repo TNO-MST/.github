@@ -110,7 +110,7 @@ jobs:
       - name: Upload built artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: maven-artifacts-${{ env.VERSION }}
+          name: maven-artifacts-${{ inputs.package_dir }}-${{ env.VERSION }}
           path: |
             **/target/*.jar
             **/target/*.pom
