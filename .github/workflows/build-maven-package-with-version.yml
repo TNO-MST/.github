@@ -107,10 +107,15 @@ jobs:
         env:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
+      - name: Sanitize package_dir
+        id: sanitize
+        run: |
+          echo "sanitized_name=$(echo '${{ inputs.package_dir }}' | sed 's/[^a-zA-Z0-9]/_/g')" >> $GITHUB_OUTPUT
+
       - name: Upload built artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: maven-artifacts-${{ inputs.package_dir && inputs.package_dir != '' && inputs.package_dir.replace('[^a-zA-Z0-9]', '_') }}-${{ env.VERSION }}
+          name: maven-artifacts-${{ steps.sanitize.outputs.sanitized_name }}-${{ env.VERSION }}
           path: |
             **/target/*.jar
             **/target/*.pom
