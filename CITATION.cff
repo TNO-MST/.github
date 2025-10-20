@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "Project Title Placeholder"
+abstract: "Short description of the software project and its purpose."
+version: "0.0.0-git" # Change to the version you are citing
+date-released: 2025-07-28
+authors:
+  - name: "TNO Mission Simulation & Training"
+    affiliation: "Nederlandse Organisatie voor toegepast-natuurwetenschappelijk Onderzoek TNO"
+repository-code: "https://github.com/TNO-MST"
+license: "Apache-2.0"
+keywords:
+  - TNO
+  - Netherlands
+type: software
+url: "https://github.com/TNO-MST"

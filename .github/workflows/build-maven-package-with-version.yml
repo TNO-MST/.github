@@ -1,0 +1,123 @@
+name: "Build Maven Package (with version)"
+on:
+  workflow_call:
+    inputs:
+      java_version:
+        type: string
+        default: "21"
+      package_dir:
+        type: string
+        default: "./"
+      version_string_substitutions:
+        type: string
+        default: "" # Space-separated list of files
+      build_date_substitutions:
+        type: string
+        default: "" # Space-separated list of files
+      install_linux_libraries:
+        type: string
+        default: "" # Space-separated apt packages, e.g. "gcompat" (Ubuntu: may differ)
+    secrets:
+      MAVEN_GPG_PRIVATE_KEY:
+        required: true # ASCII-armored private key
+      MAVEN_GPG_PASSPHRASE:
+        required: true
+    outputs:
+      version:
+        description: "Computed version used for the build"
+        value: ${{ jobs.prepare-version.outputs.version }}
+
+jobs:
+  prepare-version:
+    uses: TNO-MST/.github/.github/workflows/prepare-version.yml@main
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [prepare-version]
+    env:
+      PKG_DIR: ${{ inputs.package_dir }}
+      VERSION_FILES: ${{ inputs.version_string_substitutions }}
+      DATE_FILES: ${{ inputs.build_date_substitutions }}
+      EXTRA_LIBS: ${{ inputs.install_linux_libraries }}
+      VERSION: ${{ needs.prepare-version.outputs.version }}
+    steps:
+      - name: Checkout (full history + tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up Maven Central Repository
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java_version }}
+          distribution: temurin
+          cache: maven
+          server-id: central
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Change to package directory
+        shell: bash
+        run: |
+          cd "$PKG_DIR"
+          echo "Package directory: $(pwd)"
+
+      - name: Set Maven project version
+        shell: bash
+        run: |
+          cd "$PKG_DIR"
+          mvn -B versions:set -DnewVersion="$VERSION" -DprocessAllModules=true
+
+      - name: Substitute version string in specified files
+        if: ${{ inputs.version_string_substitutions != '' }}
+        shell: bash
+        run: |
+          cd "$PKG_DIR"
+          for file in $VERSION_FILES; do
+            echo "Updating version placeholders in: $file"
+            sed -i "s/0.0.0-git/${VERSION}/g" "$file"
+          done
+
+      - name: Substitute build date in specified files
+        if: ${{ inputs.build_date_substitutions != '' }}
+        shell: bash
+        run: |
+          cd "$PKG_DIR"
+          NOW="$(date +"%Y-%m-%d %T")"
+          echo "Setting build date to: $NOW"
+          for file in $DATE_FILES; do
+            echo "Updating build date in: $file"
+            sed -i "s/UNKNOWN_BUILD_DATE/${NOW}/g" "$file"
+          done
+
+      - name: Optionally install extra Linux libraries (Ubuntu/Debian)
+        if: ${{ inputs.install_linux_libraries != '' }}
+        shell: bash
+        run: |
+          echo "Installing additional libraries: $EXTRA_LIBS"
+          sudo apt-get update
+          sudo apt-get install -y $EXTRA_LIBS
+
+      - name: Build (clean package)
+        shell: bash
+        run: |
+          cd "$PKG_DIR"
+          mvn -B clean package
+        env:
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+
+      - name: Sanitize package_dir
+        id: sanitize
+        run: |
+          echo "sanitized_name=$(echo '${{ inputs.package_dir }}' | sed 's/[^a-zA-Z0-9]/_/g')" >> $GITHUB_OUTPUT
+
+      - name: Upload built artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: maven-artifacts-${{ steps.sanitize.outputs.sanitized_name }}-${{ env.VERSION }}
+          path: |
+            **/target/*.jar
+            **/target/*.pom
+          if-no-files-found: warn
+          compression-level: 6

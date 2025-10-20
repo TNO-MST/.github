@@ -1,0 +1,34 @@
+name: "Prepare version (git describe)"
+on:
+  workflow_call:
+    outputs:
+      version:
+        description: "Computed version string"
+        value: ${{ jobs.prepare-version.outputs.version }}
+
+jobs:
+  prepare-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+
+    steps:
+      - name: Checkout (full history + tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Compute version
+        id: ver
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Compute version with robust fallbacks for no tags
+          VERSION="$(git describe --broken --tags 2>/dev/null || \
+                    git describe --tags --always --dirty 2>/dev/null || \
+                    git rev-parse --short HEAD)"
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Computed version: $VERSION"
